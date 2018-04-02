@@ -2,7 +2,7 @@ import boto3
 import collections
 import datetime
 
-region = 'us-west-2'    # region we're running in (should be changed to be auto-determined 
+region = 'eu-central-1'    # region we're running in (should be changed to be auto-determined 
 
 ec = boto3.client('ec2')
 
