@@ -16,6 +16,7 @@
         {
             "Effect": "Allow",
             "Action": [
+		"ec2:CopySnapshot",
                 "ec2:CreateSnapshot",
                 "ec2:DeleteSnapshot",
                 "ec2:CreateTags",
