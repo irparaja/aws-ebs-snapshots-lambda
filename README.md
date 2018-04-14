@@ -19,11 +19,20 @@ Configuration is done through AWS tags. It's easy to configure which instances s
 
 The creator function is intended to be ran on a regular basis (i.e. daily), using the built-in AWS Lambda scheduler, to create snapshots for the defined instances/volumes. The manager is also intended to be ran on a regular basis (i.e. also daily, and handles snapshot expiration/retention. 
 
-For the moment, read these links for documentation on how to setup/use. I've extended it a tiny bit though and need to add docs. :) For hints on changes, see the [CHANGELOG](CHANGELOG.md)
+## Tags You Can Use On EC2s
 
-Ideas and To Do items are currently tracked in [IDEAS](IDEAS.md).
+Retention: Number of days backups should be kept for.
+Backup: The script is looking for keyword Yes, then it will create a snapshot.  
 
-This solution was forked from joshtrichards/aws-ebs-snapshots-lambda and was extended. It is based on code originally posted by Ryan S. Brown in [Scheduling EBS Snapshots - Part I](https://serverlesscode.com/post/lambda-schedule-ebs-snapshot-backups/) and [Part II](https://serverlesscode.com/post/lambda-schedule-ebs-snapshot-backups-2/).
+## Tags The Snapshots Are Given Automatically
+
+CreatedOn: The date it was created. Required to make cross-region backups.
+DeleteOn: The date the snapshot should be deleted.  
+Type: With the keyword 'Automated' 
+
+## Tags You Can Use On Snapshots
+
+KeepForever: With any value will keep the snapshot from being deleted.
 
 ## Files:
 
@@ -34,6 +43,9 @@ Each file implements a single AWS Lambda function.
 - ebs-snapshot-cross-region.py
 
 ## Related:
+
+This solution was forked from joshtrichards/aws-ebs-snapshots-lambda and was extended. It is based on code originally posted by Ryan S. Brown in [Scheduling EBS Snapshots - Part I](https://serverlesscode.com/post/lambda-schedule-ebs-snapshot-backups/) and [Part II](https://serverlesscode.com/post/lambda-schedule-ebs-snapshot-backups-2/). The main change is that I created the cross-region script, to achieve that I 
+introduced a new CreatedOn tag. 
 
 - [AWS auto snapshot script by Joe Richards](https://github.com/viyh/aws-scripts/blob/master/lambda_autosnap.py)
 - [AWS EBS Backup Job Run by Lambda by Chris Machler](http://www.evergreenitco.com/evergreenit-blog/2016/4/19/aws-ebs-backup-job-run-by-lambda)
