@@ -37,20 +37,37 @@ def lambda_handler(event, context):
     snapshot_response = ec.describe_snapshots(OwnerIds=account_ids, Filters=filters)
 
     for snap in snapshot_response['Snapshots']:
+        
+        CreatedOn = ""
+        Type = "Automated"
+        DeleteOn = ""
 
-	# open a client connection to the destination 
-	addl_ec = boto3.client('ec2', region_name=copy_region)
-	addl_snap = addl_ec.copy_snapshot(
-	    SourceRegion=source_region,
-	    SourceSnapshotId=snap['SnapshotId'],
-	    Description=snap['Description'],
-	    DestinationRegion=copy_region
-	)
+        for tag in snap['Tags']:
+            if tag['Key'] == 'CreatedOn':
+                CreatedOn = tag['Value']
+                
+            if tag['Key'] == 'Type':
+                Type = tag['Value']
+                
+            if tag['Key'] == 'DeleteOn':
+                DeleteOn = tag['Value']
 
-	if (addl_snap):
-	    print "\t\tSnapshot copy %s created in %s of [%s] from %s" % ( addl_snap['SnapshotId'], copy_region, snap['Description'], source_region )
-	# TODO: copy tags over
-	#to_tag[retention_days].append(addl_snap['SnapshotId'])
-	
+        print "\t\tCopying %s created from %s of [%s] to %s" % ( snap['SnapshotId'], source_region, description, copy_region )
 
+        addl_ec = boto3.client('ec2', region_name=copy_region)
 
+        addl_snap = addl_ec.copy_snapshot(
+            SourceRegion=source_region,
+            SourceSnapshotId=snap['SnapshotId'],
+            Description=snap['Description'],
+            DestinationRegion=copy_region
+        )
+
+        addl_ec.create_tags(
+            Resources=[addl_snap['SnapshotId']],
+            Tags=[
+                { 'Key': 'CreatedOn', 'Value': CreatedOn },
+                { 'Key': 'DeleteOn', 'Value': DeleteOn },
+                { 'Key': 'Type', 'Value': Type },
+            ]
+        )
