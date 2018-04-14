@@ -52,7 +52,7 @@ def lambda_handler(event, context):
             if tag['Key'] == 'DeleteOn':
                 DeleteOn = tag['Value']
 
-        print "\t\tCopying %s created from %s of [%s] to %s" % ( snap['SnapshotId'], source_region, description, copy_region )
+        print "\t\tCopying %s created from %s of [%s] to %s" % ( snap['SnapshotId'], source_region, snap['Description'], copy_region )
 
         addl_ec = boto3.client('ec2', region_name=copy_region)
 
