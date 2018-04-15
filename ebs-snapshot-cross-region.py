@@ -52,7 +52,7 @@ def lambda_handler(event, context):
             if tag['Key'] == 'DeleteOn':
                 DeleteOn = tag['Value']
 
-        print "\t\tCopying %s created from %s of [%s] to %s" % ( snap['SnapshotId'], source_region, snap['Description'], copy_region )
+        print "\tCopying %s created from %s of [%s] to %s" % ( snap['SnapshotId'], source_region, snap['Description'], copy_region )
 
         addl_ec = boto3.client('ec2', region_name=copy_region)
 
@@ -71,3 +71,28 @@ def lambda_handler(event, context):
                 { 'Key': 'Type', 'Value': Type },
             ]
         )
+
+    delete_on = datetime.date.today().strftime('%Y-%m-%d')
+        # limit snapshots to process to ones marked for deletion on this day
+        # AND limit snapshots to process to ones that are automated only
+        # AND exclude automated snapshots marked for permanent retention
+    filters = [
+        { 'Name': 'tag:DeleteOn', 'Values': [delete_on] },
+        { 'Name': 'tag:Type', 'Values': ['Automated'] },
+    ]
+    snapshot_response = addl_ec.describe_snapshots(OwnerIds=account_ids, Filters=filters)
+
+    for snap in snapshot_response['Snapshots']:
+        skipping_this_one = False
+        
+        for tag in snap['Tags']:
+            if tag['Key'] == 'KeepForever':
+                skipping_this_one = True
+                continue
+
+        if skipping_this_one == True:
+            print "\tSkipping snapshot %s (marked KeepForever)" % snap['SnapshotId']
+            # do nothing else
+        else:
+            print "\tDeleting snapshot %s" % snap['SnapshotId']
+            addl_ec.delete_snapshot(SnapshotId=snap['SnapshotId'])
