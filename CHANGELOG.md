@@ -2,14 +2,13 @@
 
 ## 0.0.4 [2018-04-14]
 ### Added
-- Out-of-region snapshot support
-    - Using the cross-region script you can transfer snapshots to other regions. It should be run some time 
-    after the creator script, when the snapshot backups are likely to be ready. The new script will delete
-    old snapshots as well.
+- Using the cross-region script you now can transfer snapshots to other regions. Run it after the creator script, 
+waiting at least 20 minutes to be sure snapshots are ready for copying. The new script will delete old snapshots as well.
 
 ### Changed
-- Introduction of a tag names CreatedOn with the date. This enables the script for out-of-region to find
+- Introduction of a tag "CreatedOn" with the date. This enables the script for out-of-region to find
 snapshots that should be copied.
+- Simplified the routine that processes the "KeepForever" tag. 
 
 ## 0.0.3 - 2016-05-18
 ### Added
