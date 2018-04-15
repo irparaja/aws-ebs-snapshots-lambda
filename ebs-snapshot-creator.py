@@ -21,7 +21,7 @@ def lambda_handler(event, context):
             for r in reservations
         ], [])
 
-    print "Found %d instances that need backing up" % len(instances)
+    print "\tFound %d instances that need backing up" % len(instances)
 
     to_tag = collections.defaultdict(list)
 
@@ -58,9 +58,9 @@ def lambda_handler(event, context):
                 )
             
             if (snap):
-                print "\t\tSnapshot %s created in %s of [%s]" % ( snap['SnapshotId'], region, description )
+                print "\tSnapshot %s created in %s of [%s]" % ( snap['SnapshotId'], region, description )
             to_tag[retention_days].append(snap['SnapshotId'])
-            print "\t\tRetaining snapshot %s of volume %s from instance %s (%s) for %d days" % (
+            print "\tRetaining snapshot %s of volume %s from instance %s (%s) for %d days" % (
                 snap['SnapshotId'],
                 vol_id,
                 instance['InstanceId'],
@@ -72,7 +72,7 @@ def lambda_handler(event, context):
         delete_date = datetime.date.today() + datetime.timedelta(days=retention_days)
         delete_fmt = delete_date.strftime('%Y-%m-%d')
 	today_fmt = datetime.date.today().strftime('%Y-%m-%d')
-        print "Will delete %d snapshots on %s" % (len(to_tag[retention_days]), delete_fmt)
+        print "\tWill delete %d snapshots on %s" % (len(to_tag[retention_days]), delete_fmt)
         ec.create_tags(
             Resources=to_tag[retention_days],
             Tags=[
