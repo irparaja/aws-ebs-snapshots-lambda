@@ -26,7 +26,6 @@ def lambda_handler(event, context):
         # use the exception message to get the account ID the function executes under
         account_ids.append(re.search(r'(arn:aws:sts::)([0-9]+)', str(e)).groups()[1])
 
-
     delete_on = datetime.date.today().strftime('%Y-%m-%d')
         # limit snapshots to process to ones marked for deletion on this day
         # AND limit snapshots to process to ones that are automated only
@@ -38,16 +37,16 @@ def lambda_handler(event, context):
     snapshot_response = ec.describe_snapshots(OwnerIds=account_ids, Filters=filters)
 
     for snap in snapshot_response['Snapshots']:
+        skipping_this_one = False
+        
         for tag in snap['Tags']:
-            if tag['Key'] != 'KeepForever':
-                skipping_this_one = False
-                continue
-            else:
+            if tag['Key'] == 'KeepForever':
                 skipping_this_one = True
+                continue
 
         if skipping_this_one == True:
-            print "Skipping snapshot %s (marked KeepForever)" % snap['SnapshotId']
+            print "\tSkipping snapshot %s (marked KeepForever)" % snap['SnapshotId']
             # do nothing else
         else:
-            print "Deleting snapshot %s" % snap['SnapshotId']
+            print "\tDeleting snapshot %s" % snap['SnapshotId']
             ec.delete_snapshot(SnapshotId=snap['SnapshotId'])
