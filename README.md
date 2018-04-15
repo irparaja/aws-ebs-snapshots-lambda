@@ -9,7 +9,7 @@ This is for managing AWS EC2 EBS volume snapshots. It consists of a "snapshot cr
 - Ability to configure retention period on a per EC2 instance basis (applying to all volumes attached to said instance)
 - Ability to manually tag individual snapshots to be kept indefinitely (regardless of instance retention configuration)
 - Does not require a job/management instance; no resources to provision to run snapshot jobs (leverages AWS Lambda)
-- Allows you to make cross-region backups
+- Allows you to make cross-region backups (for disaster recovery)
 
 ## Implementation Details
 

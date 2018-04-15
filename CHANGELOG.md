@@ -1,26 +1,15 @@
 # Change Log
-All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
-## 0.0.4 [unreleased]
+## 0.0.4 [2018-04-14]
 ### Added
-- WIP: Out-of-region snapshot support
-  - Prototype:
-    - An additional region, in addition to the region an instance is 
-      located in, can be specified in the creator (hardcoded in the 
-      'copy_region' (hardcoded variable). If left empty, no out of 
-      region copy is made.
-    - Problem discovered: snapshot copies can be triggered before the
-      original (source) has completed. This results in snapshots in an
-      "error" state that are unusable. To prevent this, only completed
-      snapshots should be copied.
+- Out-of-region snapshot support
+    - Using the cross-region script you can transfer snapshots to other regions. It should be run some time 
+    after the creator script, when the snapshot backups are likely to be ready. The new script will delete
+    old snapshots as well.
 
 ### Changed
-- During a job run, every individual snapshot that is triggered, is now displayed
-- The snapshot Description now includes the Name of the EC2 instance the volume was attached to at the time the snapshot was created
-- The snapshot Description now includes the device name (e.g. "/dev/sda1") on the EC2 instance the volume was attached to at the time the snapshot was created
-
-### Fixed
-- Nothing so far
+- Introduction of a tag names CreatedOn with the date. This enables the script for out-of-region to find
+snapshots that should be copied.
 
 ## 0.0.3 - 2016-05-18
 ### Added
