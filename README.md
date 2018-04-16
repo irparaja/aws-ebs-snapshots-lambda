@@ -13,11 +13,13 @@ This is for managing AWS EC2 EBS volume snapshots. It consists of a "snapshot cr
 
 ## Implementation Details
 
-It is implemented as a set of three Python based functions intended to run in AWS Lambda (which also handles the job scheduling). This makes it self-contained and easier to setup, without any external resources needed.
+A set of three Python (v2.7) based functions are provided to run in AWS Lambda and create snapshot backups and cross-region copies. They are intended to be run on a regular basis (i.e. daily). You should schedule this in AWS CloudWatch under Events. 
 
-Configuration is done through AWS tags. It's easy to configure which instances should have their volumes backed up and how long their snapshots should be retained for. It's also possible to tag certain snapshots for indefinite retention.
+AWS Lambda requires access to your resources. When creating your first function, you will create an execution role and then can copy paste in the policy permissions found in this repository.  
 
-The creator function is intended to be ran on a regular basis (i.e. daily), using the built-in AWS Lambda scheduler, to create snapshots for the defined instances/volumes. The manager is also intended to be ran on a regular basis (i.e. also daily, and handles snapshot expiration/retention. 
+Backup configuration is done through tags you place on EC2s. Simply add a tag 'Backup' with the value 'Yes' on instances that should have their volumes backed up.  
+
+There are also two shell scripts for dumping MySQL and MariaDB databases. The idea of exporting the databases is improved consistency, snapshots start and end after some time. If you have large databases and dependant on your schema types, you might want to skip table locking.  
 
 ## Tags You Can Use On EC2s
 
