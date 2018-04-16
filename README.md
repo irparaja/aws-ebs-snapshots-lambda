@@ -26,9 +26,9 @@ Backup: The script is looking for keyword Yes, then it will create a snapshot.
 
 ## Tags The Snapshots Are Given Automatically
 
-CreatedOn: The date it was created. Required to make cross-region backups.
+CreatedOn: The date it was created. Required to make cross-region backups.  
 DeleteOn: The date the snapshot should be deleted.  
-Type: With the keyword 'Automated' 
+Type: With the keyword 'Automated'.   
 
 ## Tags You Can Use On Snapshots
 
