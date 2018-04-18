@@ -37,20 +37,6 @@ def lambda_handler(event, context):
     snapshot_response = ec.describe_snapshots(OwnerIds=account_ids, Filters=filters)
 
     for snap in snapshot_response['Snapshots']:
-        
-        CreatedOn = ""
-        Type = "Automated"
-        DeleteOn = ""
-
-        for tag in snap['Tags']:
-            if tag['Key'] == 'CreatedOn':
-                CreatedOn = tag['Value']
-                
-            if tag['Key'] == 'Type':
-                Type = tag['Value']
-                
-            if tag['Key'] == 'DeleteOn':
-                DeleteOn = tag['Value']
 
         print "\tCopying %s created from %s of [%s] to %s" % ( snap['SnapshotId'], source_region, snap['Description'], copy_region )
 
@@ -65,11 +51,7 @@ def lambda_handler(event, context):
 
         addl_ec.create_tags(
             Resources=[addl_snap['SnapshotId']],
-            Tags=[
-                { 'Key': 'CreatedOn', 'Value': CreatedOn },
-                { 'Key': 'DeleteOn', 'Value': DeleteOn },
-                { 'Key': 'Type', 'Value': Type },
-            ]
+            Tags=snap['Tags']
         )
 
     delete_on = datetime.date.today().strftime('%Y-%m-%d')
