@@ -23,7 +23,7 @@ There are also two shell scripts for dumping MySQL and MariaDB databases. The id
 
 ## Tags You Can Use On EC2s
 
-Retention: Number of days backups should be kept for.  
+Retention: Number of days backups should be kept for (Optional).  
 Backup: The script is looking for keyword Yes, then it will create a snapshot.  
 
 ## Tags The Snapshots Are Given Automatically
