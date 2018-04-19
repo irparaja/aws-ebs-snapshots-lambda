@@ -36,11 +36,11 @@ def lambda_handler(event, context):
     ]
     snapshot_response = ec.describe_snapshots(OwnerIds=account_ids, Filters=filters)
 
+    addl_ec = boto3.client('ec2', region_name=copy_region)
+
     for snap in snapshot_response['Snapshots']:
 
         print "\tCopying %s created from %s of [%s] to %s" % ( snap['SnapshotId'], source_region, snap['Description'], copy_region )
-
-        addl_ec = boto3.client('ec2', region_name=copy_region)
 
         addl_snap = addl_ec.copy_snapshot(
             SourceRegion=source_region,
