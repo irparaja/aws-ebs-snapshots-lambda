@@ -1,6 +1,6 @@
 # Change Log
 
-## 0.0.4 [2018-04-14]
+## 0.0.4 [2018-04-20]
 ### Added
 - Using the cross-region script you now can transfer snapshots to other regions. Run it after the creator script, 
 waiting at least 20 minutes to be sure snapshots are ready for copying. The new script will delete old snapshots as well.
