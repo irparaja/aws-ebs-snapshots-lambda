@@ -27,9 +27,10 @@ def lambda_handler(event, context):
         account_ids.append(re.search(r'(arn:aws:sts::)([0-9]+)', str(e)).groups()[1])
 
     delete_on = datetime.date.today().strftime('%Y-%m-%d')
-        # limit snapshots to process to ones marked for deletion on this day
-        # AND limit snapshots to process to ones that are automated only
-        # AND exclude automated snapshots marked for permanent retention
+    
+    # limit snapshots to process to ones marked for deletion on this day
+    # AND limit snapshots to process to ones that are automated only
+    # AND exclude automated snapshots marked for permanent retention
     filters = [
         { 'Name': 'tag:DeleteOn', 'Values': [delete_on] },
         { 'Name': 'tag:Type', 'Values': ['Automated'] },
