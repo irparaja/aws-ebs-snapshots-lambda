@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.0.5 [2018-05-10]
+- You no longer need to modify scripts on setup. To cross region backup, add the tag BackupCrossRegion to your EC2. It can be a single region code or comma separated list, e.g. eu-west-1,eu-west-2 
+
 ## 0.0.4 [2018-04-20]
 ### Added
 - Using the cross-region script you now can transfer snapshots to other regions. Run it after the creator script, 
