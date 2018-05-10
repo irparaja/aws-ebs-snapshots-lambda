@@ -1,11 +1,15 @@
 import boto3
 import re
-import collections
 import datetime
 
-# Source Region - the region our instances are running in that we're backing up
-source_region = 'eu-central-1' 
-copy_region = 'eu-west-1'
+""" Searches for snapshots to copy to another region based on the following tags
+Type               Automated
+CreatedOn          [todays date, e.g. 2018-05-10]
+BackupCrossRegion  [single region code or comma separated list, e.g. eu-west-1,eu-west-2]
+"""
+
+session = boto3.session.Session()
+source_region = session.region_name
 
 ec = boto3.client('ec2')
 iam = boto3.client('iam')
@@ -27,54 +31,45 @@ def lambda_handler(event, context):
 
     today_fmt = datetime.date.today().strftime('%Y-%m-%d')
 
-        # limit snapshots to process to ones marked for deletion on this day
-        # AND limit snapshots to process to ones that are automated only
-        # AND exclude automated snapshots marked for permanent retention
     filters = [
         { 'Name': 'tag:CreatedOn', 'Values': [today_fmt] },
         { 'Name': 'tag:Type', 'Values': ['Automated'] },
+        { 'Name': 'tag:BackupCrossRegion', 'Values': ['*'] }
     ]
     snapshot_response = ec.describe_snapshots(OwnerIds=account_ids, Filters=filters)
 
-    addl_ec = boto3.client('ec2', region_name=copy_region)
-
     for snap in snapshot_response['Snapshots']:
 
-        print "\tCopying %s created from %s of [%s] to %s" % ( snap['SnapshotId'], source_region, snap['Description'], copy_region )
-
-        addl_snap = addl_ec.copy_snapshot(
-            SourceRegion=source_region,
-            SourceSnapshotId=snap['SnapshotId'],
-            Description=snap['Description'],
-            DestinationRegion=copy_region
-        )
-
-        addl_ec.create_tags(
-            Resources=[addl_snap['SnapshotId']],
-            Tags=snap['Tags']
-        )
-
-    delete_on = datetime.date.today().strftime('%Y-%m-%d')
-        # limit snapshots to process to ones marked for deletion on this day
-        # AND limit snapshots to process to ones that are automated only
-        # AND exclude automated snapshots marked for permanent retention
-    filters = [
-        { 'Name': 'tag:DeleteOn', 'Values': [delete_on] },
-        { 'Name': 'tag:Type', 'Values': ['Automated'] },
-    ]
-    snapshot_response = addl_ec.describe_snapshots(OwnerIds=account_ids, Filters=filters)
-
-    for snap in snapshot_response['Snapshots']:
-        skipping_this_one = False
+        print "\tCopying %s created from %s of [%s]" % ( snap['SnapshotId'], source_region, snap['Description'])
         
-        for tag in snap['Tags']:
-            if tag['Key'] == 'KeepForever':
-                skipping_this_one = True
-                continue
+        target_regions = [
+            t.get('Value') for t in snap['Tags']
+            if t['Key'] == 'BackupCrossRegion'][0]
 
-        if skipping_this_one == True:
-            print "\tSkipping snapshot %s (marked KeepForever)" % snap['SnapshotId']
-            # do nothing else
-        else:
-            print "\tDeleting snapshot %s" % snap['SnapshotId']
-            addl_ec.delete_snapshot(SnapshotId=snap['SnapshotId'])
+        for target in target_regions.split(','):
+            
+            print "\t\tto %s" % ( target )
+
+            addl_ec = boto3.client('ec2', region_name=target)
+
+            addl_snap = addl_ec.copy_snapshot(
+                SourceRegion=source_region,
+                SourceSnapshotId=snap['SnapshotId'],
+                Description=snap['Description'],
+                DestinationRegion=target
+            )
+    
+            addl_ec.create_tags(
+                Resources=[addl_snap['SnapshotId']],
+                Tags=snap['Tags']
+            )
+        
+            addl_ec.delete_tags(
+                Resources=[addl_snap['SnapshotId']],
+                Tags=[{"Key": "BackupCrossRegion"}]
+            )
+
+            addl_ec.create_tags(
+                Resources=[addl_snap['SnapshotId']],
+                Tags=[{ 'Key': 'BackupFromRegion', 'Value': source_region }]
+            )
