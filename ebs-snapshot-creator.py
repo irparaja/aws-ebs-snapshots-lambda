@@ -2,6 +2,12 @@ import boto3
 import collections
 import datetime
  
+"""
+This function snapshots EC2 instances that have a "Backup" tag containing any
+value. If there is no "Retention" tag with a value indicating the number of
+days, then the default of 7 is given.
+"""
+
 session = boto3.session.Session()
 region = session.region_name
 
@@ -37,8 +43,11 @@ def lambda_handler(event, context):
         for dev in instance['BlockDeviceMappings']:
             if dev.get('Ebs', None) is None:
                 continue
+
             vol_id = dev['Ebs']['VolumeId']
+
             dev_name = dev['DeviceName']
+
             print "\tFound EBS volume %s (%s) on instance %s" % (
                 vol_id, dev_name, instance['InstanceId'])
 
@@ -52,7 +61,6 @@ def lambda_handler(event, context):
             
             description = '%s - %s (%s)' % ( instance_name, vol_id, dev_name )
 
-            # trigger snapshot
             snap = ec.create_snapshot(
                 VolumeId=vol_id, 
                 Description=description
@@ -60,7 +68,9 @@ def lambda_handler(event, context):
             
             if (snap):
                 print "\tSnapshot %s created in %s of [%s]" % ( snap['SnapshotId'], region, description )
+
             to_tag[retention_days].append(snap['SnapshotId'])
+
             print "\tRetaining snapshot %s of volume %s from instance %s (%s) for %d days" % (
                 snap['SnapshotId'],
                 vol_id,
@@ -71,9 +81,13 @@ def lambda_handler(event, context):
 
     for retention_days in to_tag.keys():
         delete_date = datetime.date.today() + datetime.timedelta(days=retention_days)
+
         delete_fmt = delete_date.strftime('%Y-%m-%d')
-	today_fmt = datetime.date.today().strftime('%Y-%m-%d')
+
+        today_fmt = datetime.date.today().strftime('%Y-%m-%d')
+
         print "\tWill delete %d snapshots on %s" % (len(to_tag[retention_days]), delete_fmt)
+        
         ec.create_tags(
             Resources=to_tag[retention_days],
             Tags=[
