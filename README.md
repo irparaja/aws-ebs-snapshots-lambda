@@ -1,6 +1,6 @@
 ## Overview
 
-This is for managing AWS EC2 EBS volume snapshots. It consists of a "snapshot creator", a "snapshot manager" for deleting old archives and a "snapshot copier" that moves them to another region. 
+This repository is for managing AWS EC2 EBS volume snapshots. It consists of a "snapshot creator", a "snapshot manager" for deleting old archives and a "snapshot copier" that moves them to another region. 
 
 ## Functionality:
 
@@ -17,7 +17,9 @@ A set of three Python (v2.7) based functions are provided to run in AWS Lambda a
 
 AWS Lambda requires access to your resources. When creating your first function, you will create an execution role and then can copy paste in the policy permissions found in this repository.  
 
-Backup configuration is done through tags you place on EC2s. Simply add a tag 'Backup' with the value 'Yes' on instances that should have their volumes backed up.  
+Backup configuration is done through tags you place on EC2s. Just add a tag 'Backup' with the value 'Yes' on instances that should have their volumes backed up. 
+
+Cross region backups work by adding the tag 'BackupCrossRegion' with the target region or regions codes. Each region snapshots are copied too will need the "snapshot manager" being run.
 
 There are also two shell scripts for dumping MySQL and MariaDB databases. The idea of exporting the databases is improved consistency, snapshots start and end after some time. If you have large databases and dependant on your schema types, you might want to skip table locking.  
 
@@ -25,16 +27,15 @@ There are also two shell scripts for dumping MySQL and MariaDB databases. The id
 
 Retention: Number of days backups should be kept for (Optional).  
 Backup: The script is looking for keyword Yes, then it will create a snapshot.  
+BackupCrossRegion:  a single region code or comma separated list, e.g. eu-west-1,eu-west-2
+KeepForever: With any value will keep the snapshot from being deleted.
 
 ## Tags The Snapshots Are Given Automatically
 
 CreatedOn: The date it was created. Required to make cross-region backups.  
 DeleteOn: The date the snapshot should be deleted.  
 Type: With the keyword 'Automated'.   
-
-## Tags You Can Use On Snapshots
-
-KeepForever: With any value will keep the snapshot from being deleted.
+BackupFromRegion: With the region code where a snapshot was copied from.
 
 ## Files:
 
@@ -61,4 +62,3 @@ introduced a new CreatedOn tag.
 ## Other Relevant Resources (especially if you're going to customize):
 
 - [Boto 3 Docs for EC2](https://boto3.readthedocs.io/en/latest/reference/services/ec2.html)
-
