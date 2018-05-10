@@ -1,8 +1,9 @@
 import boto3
 import collections
 import datetime
-
-region = 'eu-central-1'    # region we're running in (should be changed to be auto-determined 
+ 
+session = boto3.session.Session()
+region = session.region_name
 
 ec = boto3.client('ec2')
 
