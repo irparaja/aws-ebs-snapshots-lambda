@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.0.6 [2018-08-06]
+- Snapshot creator was not adding the BackupCrossRegion on the snapshots, so cross region backups were not happening. 
+- Improved manager so it doesn't have to be run every day. If the delete on date is in the past the snapshot gets deleted. 
+
 ## 0.0.5 [2018-05-10]
 - You no longer need to modify scripts on setup. To cross region backup, add the tag BackupCrossRegion to your EC2. It can be a single region code or comma separated list, e.g. eu-west-1,eu-west-2 
 
@@ -25,7 +29,7 @@ snapshots that should be copied.
 - Cleaned up some code formatting for key/values
 - The instance tag "Backup" must now be set explicitly to "Yes" (rather than just being present with any value)
 - The snapshot manager skips processing of any snapshots lacking the tag 
-  "Type" with a value of "Automated"  
+  "Type" with a value of "Automated" 
 - The instance Name (a standard AWS tag) is now displayed (in parentheses)
   after the InstanceID in log output in the snapshot creator
 

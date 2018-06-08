@@ -31,7 +31,8 @@ def lambda_handler(event, context):
     print "\tFound %d instances that need backing up" % len(instances)
 
     to_tag = collections.defaultdict(list)
-
+    instance_cross_region = {}
+    
     for instance in instances:
         try:
             retention_days = [
@@ -51,14 +52,15 @@ def lambda_handler(event, context):
             print "\tFound EBS volume %s (%s) on instance %s" % (
                 vol_id, dev_name, instance['InstanceId'])
 
-            # figure out instance name if there is one
+            # figure out instance name & if cross region backup wanted
             instance_name = ""
+            cross_region = ""
             for tag in instance['Tags']:
-                if tag['Key'] != 'Name':
-                    continue
-                else:
+                if tag['Key'] == 'Name':
                     instance_name = tag['Value']
-            
+                if tag['Key'] == 'BackupCrossRegion':
+                    cross_region = tag['Value']
+
             description = '%s - %s (%s)' % ( instance_name, vol_id, dev_name )
 
             snap = ec.create_snapshot(
@@ -79,20 +81,23 @@ def lambda_handler(event, context):
                 retention_days,
             )
 
-    for retention_days in to_tag.keys():
-        delete_date = datetime.date.today() + datetime.timedelta(days=retention_days)
+            today_fmt = datetime.date.today().strftime('%Y-%m-%d')
+            delete_date = datetime.date.today() + datetime.timedelta(days=retention_days)
+            delete_fmt = delete_date.strftime('%Y-%m-%d')
 
-        delete_fmt = delete_date.strftime('%Y-%m-%d')
+            ec.create_tags(
+                Resources=[snap['SnapshotId'],],
+                Tags=[
+                    { 'Key': 'CreatedOn', 'Value': today_fmt },
+                    { 'Key': 'DeleteOn', 'Value': delete_fmt },
+                    { 'Key': 'Type', 'Value': 'Automated' },
+                ]
+            )
 
-        today_fmt = datetime.date.today().strftime('%Y-%m-%d')
-
-        print "\tWill delete %d snapshots on %s" % (len(to_tag[retention_days]), delete_fmt)
-        
-        ec.create_tags(
-            Resources=to_tag[retention_days],
-            Tags=[
-                { 'Key': 'CreatedOn', 'Value': today_fmt },
-                { 'Key': 'DeleteOn', 'Value': delete_fmt },
-                { 'Key': 'Type', 'Value': 'Automated' },
-            ]
-        )
+            if cross_region:    
+                ec.create_tags(
+                    Resources=[snap['SnapshotId'],],
+                    Tags=[
+                        { 'Key': 'BackupCrossRegion', 'Value': cross_region }
+                    ]
+                )
