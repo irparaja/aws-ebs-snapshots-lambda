@@ -2,6 +2,8 @@
 
 This repository is for managing AWS EC2 EBS volume snapshots. It consists of a "snapshot creator", a "snapshot manager" for deleting old archives and a "snapshot copier" that moves them to another region. 
 
+There is an AWS EC2 'Lifecycle Manager' which provides nearly equivalent functionality but currently cannot copy snapshots to another region. 
+
 ## Functionality:
 
 - Automatic snapshots (on whatever schedule you prefer)
@@ -10,6 +12,10 @@ This repository is for managing AWS EC2 EBS volume snapshots. It consists of a "
 - Ability to manually tag individual snapshots to be kept indefinitely (regardless of instance retention configuration)
 - Does not require a job/management instance; no resources to provision to run snapshot jobs (leverages AWS Lambda)
 - Allows you to make cross-region backups (for disaster recovery)
+
+## Known Limitations:
+
+- The AWS service limits 5 concurrent snapshot request limit. 
 
 ## Implementation Details
 
